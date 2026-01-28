@@ -35,6 +35,10 @@ Render the kustomize single file, for easy installation:
 
 This can then be installed via either of:
 
-> kubectl apply --server-side -k config/multi-ns-install.yaml
+> kubectl apply --server-side -f config/multi-ns-install.yaml
 
-> kubectl apply --server-side -k https://raw.githubusercontent.com/iter8-au/postgres-operator/refs/heads/op-dev/config/multi-ns-install.yaml
+> kubectl apply --server-side -f https://raw.githubusercontent.com/iter8-au/postgres-operator/refs/heads/op-dev/config/multi-ns-install.yaml
+
+### Uninstall
+
+> kubectl delete -f config/multi-ns-install.yaml
