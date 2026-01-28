@@ -26,3 +26,15 @@
 
 - The `rbac` base creates a `ClusterRole` that allows the operator to
   manage resources in all current and future namespaces.
+
+## Single Install File
+
+Render the kustomize single file, for easy installation:
+
+> kustomize build config/default -o config/multi-ns-install.yaml
+
+This can then be installed via either of:
+
+> kubectl apply --server-side -k config/multi-ns-install.yaml
+
+> kubectl apply --server-side -k https://raw.githubusercontent.com/iter8-au/postgres-operator/refs/heads/op-dev/config/multi-ns-install.yaml

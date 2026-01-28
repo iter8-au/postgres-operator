@@ -1,6 +1,7 @@
 kind: Kustomization
 
-namespace: postgres-operator
+# We use a custom namespace for the PGO
+namespace: op-dev-postgres-operator
 
 labels:
 - includeSelectors: false
@@ -20,6 +21,12 @@ resources:
 
 components:
 - ../components/images-by-tag
+
+# We set a specific image for the operator
+images:
+- name: postgres-operator
+  newName: registry.developers.crunchydata.com/crunchydata/postgres-operator
+  newTag: ubi9-6.0.0-0
 
 patches:
 - patch: |-
