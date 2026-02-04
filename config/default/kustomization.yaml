@@ -37,6 +37,13 @@ patches:
     spec:
       template:
         spec:
+          tolerations:
+          - key: "node-operator"
+            value: "true"
+            operator: "Equal"
+            effect: "NoSchedule"
+          nodeSelector:
+            "node-operator-label": "true"
           containers:
           - name: operator
             env:

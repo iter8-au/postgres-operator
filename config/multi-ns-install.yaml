@@ -44631,4 +44631,11 @@ spec:
           runAsNonRoot: true
           seccompProfile:
             type: RuntimeDefault
+      nodeSelector:
+        node-operator-label: "true"
       serviceAccountName: pgo
+      tolerations:
+      - effect: NoSchedule
+        key: node-operator
+        operator: Equal
+        value: "true"
