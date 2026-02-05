@@ -44550,6 +44550,16 @@ spec:
         app.kubernetes.io/version: 6.0.0
         postgres-operator.crunchydata.com/control-plane: postgres-operator
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: cloud.google.com/compute-class
+                operator: In
+                values:
+                - ci-compute-class-normal
+            weight: 1
       containers:
       - env:
         - name: PGO_FEATURE_GATES
@@ -44631,8 +44641,6 @@ spec:
           runAsNonRoot: true
           seccompProfile:
             type: RuntimeDefault
-      nodeSelector:
-        node-operator-label: "true"
       serviceAccountName: pgo
       tolerations:
       - effect: NoSchedule

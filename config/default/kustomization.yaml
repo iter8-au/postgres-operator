@@ -42,8 +42,16 @@ patches:
             value: "true"
             operator: "Equal"
             effect: "NoSchedule"
-          nodeSelector:
-            "node-operator-label": "true"
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 1
+                preference:
+                  matchExpressions:
+                  - key: cloud.google.com/compute-class
+                    operator: In
+                    values:
+                    - ci-compute-class-normal
           containers:
           - name: operator
             env:
