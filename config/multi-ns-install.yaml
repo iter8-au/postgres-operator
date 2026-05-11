@@ -44627,11 +44627,11 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            cpu: 25m
-            memory: 50Mi
+            cpu: 100m
+            memory: 400Mi
           requests:
-            cpu: 10m
-            memory: 10Mi
+            cpu: 25m
+            memory: 25Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
