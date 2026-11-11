@@ -1,4 +1,4 @@
-// Copyright 2021 - 2025 Crunchy Data Solutions, Inc.
+// Copyright 2021 - 2026 Crunchy Data Solutions, Inc.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,6 +25,7 @@ func TestNewParameters(t *testing.T) {
 
 		"wal_level": "logical",
 	})
+	//nolint:gosec // G101: "password_encryption" is a PostgreSQL parameter name, not a credential.
 	assert.DeepEqual(t, parameters.Default.AsMap(), map[string]string{
 		"jit": "off",
 

@@ -1,4 +1,4 @@
-// Copyright 2021 - 2025 Crunchy Data Solutions, Inc.
+// Copyright 2021 - 2026 Crunchy Data Solutions, Inc.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -474,6 +474,7 @@ func instanceYAML(
 		},
 	}
 
+	//nolint:gosec // G101: "pgpass" is a Patroni configuration key for a file path, not a credential.
 	postgresql := map[string]any{
 		// Missing here is "connect_address" which cannot be known until the
 		// instance Pod is created. That value should be injected using the downward

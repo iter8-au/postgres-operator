@@ -1,4 +1,4 @@
-// Copyright 2021 - 2025 Crunchy Data Solutions, Inc.
+// Copyright 2021 - 2026 Crunchy Data Solutions, Inc.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -2514,7 +2514,7 @@ func (r *Reconciler) reconcileManualBackup(ctx context.Context,
 	for _, opt := range backupOpts {
 		if strings.Contains(opt, "--repo=") || strings.Contains(opt, "--repo ") {
 			r.Recorder.Eventf(postgresCluster, corev1.EventTypeWarning, "InvalidManualBackup",
-				"Option '--repo' is not allowed: please use the 'repoName' field instead.",
+				"Option '--repo' is not allowed for repo %q: please use the 'repoName' field instead.",
 				repoName)
 			return nil
 		}

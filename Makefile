@@ -185,9 +185,14 @@ check-envtest-existing: createnamespaces
 #
 # https://kyverno.github.io/chainsaw/latest/operations/script#kubeconfig
 #
+# NOTE: The autogrow volume tests require a storage provider that supports real
+# volume expansion (e.g., GKE, EKS, AKS). They will fail on k3d/kind with the
+# default local-path provisioner. Use CHAINSAW_EXTRA_ARGS to skip them when needed:
+#   make check-chainsaw CHAINSAW_EXTRA_ARGS='--exclude-test-regex chainsaw/.*autogrow.*'
+#
 .PHONY: check-chainsaw
 check-chainsaw:
-	$(CHAINSAW_TEST) --config testing/chainsaw/e2e/config.yaml --values testing/chainsaw/e2e/values.yaml testing/chainsaw/e2e
+	$(CHAINSAW_TEST) --config testing/chainsaw/e2e/config.yaml --values testing/chainsaw/e2e/values.yaml $(CHAINSAW_EXTRA_ARGS) testing/chainsaw/e2e
 
 # Expects operator to be running
 #
@@ -206,7 +211,7 @@ generate-kuttl: export KUTTL_PG_UPGRADE_FROM_VERSION ?= 16
 generate-kuttl: export KUTTL_PG_UPGRADE_TO_VERSION ?= 17
 generate-kuttl: export KUTTL_PG_VERSION ?= 16
 generate-kuttl: export KUTTL_POSTGIS_VERSION ?= 3.4
-generate-kuttl: export KUTTL_PSQL_IMAGE ?= registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.7-2547
+generate-kuttl: export KUTTL_PSQL_IMAGE ?= registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi9-17.7-2550
 generate-kuttl: export KUTTL_TEST_DELETE_NAMESPACE ?= kuttl-test-delete-namespace
 generate-kuttl: ## Generate kuttl tests
 	[ ! -d testing/kuttl/e2e-generated ] || rm -r testing/kuttl/e2e-generated
@@ -233,8 +238,7 @@ generate-kuttl: ## Generate kuttl tests
 .PHONY: check-generate
 check-generate: ## Check everything generated is also committed
 check-generate: generate
-	git diff --exit-code -- config/crd
-	git diff --exit-code -- config/rbac
+	git diff --exit-code -- config/dev
 	git diff --exit-code -- internal/collector
 	git diff --exit-code -- pkg/apis
 
@@ -249,7 +253,7 @@ generate: generate-rbac
 generate-crd: ## Generate Custom Resource Definitions (CRDs)
 	$(CONTROLLER) $(\
 		) crd paths='./pkg/apis/...' $(\
-		) output:dir='config/crd/bases' # {directory}/{group}_{plural}.yaml
+		) output:dir='config/dev/crd/bases' # {directory}/{group}_{plural}.yaml
 	$(GO) generate ./internal/crd
 
 .PHONY: generate-collector
@@ -267,7 +271,7 @@ generate-rbac: ## Generate RBAC
 	$(CONTROLLER) $(\
 		) rbac:roleName='postgres-operator' $(\
 		) paths='./cmd/...' paths='./internal/...' $(\
-		) output:dir='config/rbac' # {directory}/role.yaml
+		) output:dir='config/dev/rbac/cluster' # {directory}/role.yaml
 
 # https://www.gnu.org/software/make/manual/make.html#Multi_002dLine
 define newline

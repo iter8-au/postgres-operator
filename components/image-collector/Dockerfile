@@ -1,10 +1,10 @@
-# Copyright 2025 Crunchy Data Solutions, Inc.
+# Copyright 2025 - 2026 Crunchy Data Solutions, Inc.
 #
 # SPDX-License-Identifier: Apache-2.0
 
 # Rather than build the binary, retrieve the already-built binary from
 # the OpenTelemetry image
-FROM otel/opentelemetry-collector-contrib:0.139.0 AS collector
+FROM otel/opentelemetry-collector-contrib:0.159.0 AS collector
 
 # Aggregate the collector licenses from binary
 # and from root of the PGO repo
@@ -34,6 +34,7 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal
 COPY --from=build --chmod=0777 /otelcol-contrib /otelcol-contrib
 COPY --from=build /licenses /licenses
 
-RUN microdnf install -y 'logrotate' 'procps-ng'
+RUN microdnf update -y --nodocs \
+ && microdnf install -y 'logrotate' 'procps-ng'
 
 USER 2

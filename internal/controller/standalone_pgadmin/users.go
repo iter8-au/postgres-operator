@@ -1,4 +1,4 @@
-// Copyright 2023 - 2025 Crunchy Data Solutions, Inc.
+// Copyright 2023 - 2026 Crunchy Data Solutions, Inc.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -179,11 +179,19 @@ cd $PGADMIN_DIR
 	}
 
 	var olderThan9_3 bool
-	versionFloat, err := strconv.ParseFloat(pgadmin.Status.MinorVersion, 64)
-	if err != nil {
-		return err
+
+	// Validate the pgAdmin minor version is in the format "X.Y"
+	parts := strings.Split(pgadmin.Status.MinorVersion, ".")
+	if len(parts) != 2 {
+		return errors.New("invalid pgAdmin minor version: " + pgadmin.Status.MinorVersion)
 	}
-	if versionFloat < 9.3 {
+
+	// Parse the major and minor versions
+	major, _ := strconv.Atoi(parts[0])
+	minor, _ := strconv.Atoi(parts[1])
+
+	// Check if the pgAdmin version is older than 9.3
+	if major < 9 || (major == 9 && minor < 3) {
 		olderThan9_3 = true
 	}
 
@@ -324,6 +332,8 @@ cd $PGADMIN_DIR
 	// to add a user, that user will not be in intentUsers. If errors occurred when attempting to
 	// update a user, the user will be in intentUsers as it existed before. We now want to marshal the
 	// intentUsers to json and write the users.json file to the secret.
+
+	//nolint:gosec // G117: Password is intentionally stored in a Kubernetes Secret.
 	intentUserSecret.Data["users.json"], _ = json.Marshal(intentUsers)
 
 	err = errors.WithStack(r.setControllerReference(pgadmin, intentUserSecret))

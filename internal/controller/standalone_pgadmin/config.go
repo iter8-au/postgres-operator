@@ -1,4 +1,4 @@
-// Copyright 2023 - 2025 Crunchy Data Solutions, Inc.
+// Copyright 2023 - 2026 Crunchy Data Solutions, Inc.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,5 +15,5 @@ const (
 	pgAdminPort = 5050
 
 	// Directory for pgAdmin in container
-	pgAdminDir = "/usr/local/lib/python3.11/site-packages/pgadmin4"
+	pgAdminDir = "/usr/local/lib/python3.12/site-packages/pgadmin4"
 )

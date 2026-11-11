@@ -1,4 +1,4 @@
-// Copyright 2024 - 2025 Crunchy Data Solutions, Inc.
+// Copyright 2024 - 2026 Crunchy Data Solutions, Inc.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -52,12 +52,8 @@ func EnablePgBouncerLogging(ctx context.Context,
 	outConfig *Config,
 	logfile string,
 ) {
-	var spec *v1beta1.InstrumentationLogsSpec
-	if inCluster != nil && inCluster.Spec.Instrumentation != nil {
-		spec = inCluster.Spec.Instrumentation.Logs
-	}
-
 	if OpenTelemetryLogsEnabled(ctx, inCluster) {
+		spec := inCluster.Spec.Instrumentation
 		directory := filepath.Dir(logfile)
 
 		// Keep track of what log records and files have been processed.
@@ -151,21 +147,31 @@ func EnablePgBouncerLogging(ctx context.Context,
 		// If there are exporters to be added to the logs pipelines defined in
 		// the spec, add them to the pipeline. Otherwise, add the DebugExporter.
 		exporters := []ComponentID{DebugExporter}
-		if spec != nil && spec.Exporters != nil {
-			exporters = slices.Clone(spec.Exporters)
+		if spec.Logs != nil && spec.Logs.Exporters != nil {
+			exporters = slices.Clone(spec.Logs.Exporters)
 		}
+
+		pgbouncerProcessors := []ComponentID{
+			"resource/pgbouncer",
+			"transform/pgbouncer_logs",
+		}
+
+		// We can only add the ResourceDetectionProcessor if there are detectors set,
+		// otherwise it will fail. This is due to a change in the following upstream commmit:
+		// https://github.com/open-telemetry/opentelemetry-collector-contrib/commit/50cd2e8433cee1e292e7b7afac9758365f3a1298
+		if spec.Config != nil && spec.Config.Detectors != nil && len(spec.Config.Detectors) > 0 {
+			pgbouncerProcessors = append(pgbouncerProcessors, ResourceDetectionProcessor)
+		}
+
+		// Order of processors matter so we add the batching and compacting processors after
+		// potentially adding the resourcedetection processor
+		pgbouncerProcessors = append(pgbouncerProcessors, LogsBatchProcessor, CompactingProcessor)
 
 		outConfig.Pipelines["logs/pgbouncer"] = Pipeline{
 			Extensions: []ComponentID{"file_storage/pgbouncer_logs"},
 			Receivers:  []ComponentID{"filelog/pgbouncer_log"},
-			Processors: []ComponentID{
-				"resource/pgbouncer",
-				"transform/pgbouncer_logs",
-				ResourceDetectionProcessor,
-				LogsBatchProcessor,
-				CompactingProcessor,
-			},
-			Exporters: exporters,
+			Processors: pgbouncerProcessors,
+			Exporters:  exporters,
 		}
 	}
 }
@@ -185,8 +191,8 @@ func EnablePgBouncerMetrics(ctx context.Context, inCluster *v1beta1.PostgresClus
 		config.Receivers[SqlQuery] = map[string]any{
 			"driver": "postgres",
 			"datasource": fmt.Sprintf(
-				`host=localhost dbname=pgbouncer port=5432 user=%s password=${env:PGPASSWORD}`,
-				sqlQueryUsername),
+				`host=localhost dbname=pgbouncer port=%d user=%s password=${env:PGPASSWORD}`,
+				*inCluster.Spec.Proxy.PGBouncer.Port, sqlQueryUsername),
 			"queries": slices.Clone(pgBouncerMetricsQueries),
 		}
 

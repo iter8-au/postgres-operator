@@ -1,10 +1,10 @@
-# Copyright 2017 - 2025 Crunchy Data Solutions, Inc.
+# Copyright 2017 - 2026 Crunchy Data Solutions, Inc.
 #
 # SPDX-License-Identifier: Apache-2.0
 
 FROM localhost/crunchy-postgres:latest
 
-ARG POSTGRES_UPGRADE_VERSIONS="13 14 15 16 17"
+ARG POSTGRES_UPGRADE_VERSIONS="14 15 16 17 18"
 ARG BASE_VERSION=ubi9
 
 USER 0
@@ -18,12 +18,15 @@ rpm -ivh "https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-$(arch)/pg
 # Disable module to avoid conflicts
 microdnf --assumeyes module disable postgresql || true
 
+# Refresh base packages so any CVE patches that landed in the upstream
+# repos after the parent crunchy-postgres image was built are picked up.
+microdnf update -y --nodocs
+
 # Build package list for all target versions
 PKGS="$(for POSTGRES_VERSION in ${POSTGRES_UPGRADE_VERSIONS}; do
 POSTGRES_MAJOR_VERSION="${POSTGRES_VERSION%.*}"
 
 case "$POSTGRES_MAJOR_VERSION" in
-    13) PGAUDIT_PKG=pgaudit15_13 ;;
     14) PGAUDIT_PKG=pgaudit16_14 ;;
     15) PGAUDIT_PKG=pgaudit17_15 ;;
     *)  PGAUDIT_PKG="pgaudit_${POSTGRES_MAJOR_VERSION}" ;;

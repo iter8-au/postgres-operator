@@ -1,4 +1,4 @@
-// Copyright 2025 Crunchy Data Solutions, Inc.
+// Copyright 2025 - 2026 Crunchy Data Solutions, Inc.
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -20,7 +20,7 @@ import (
 
 func main() {
 	cwd := need(os.Getwd())
-	dir := filepath.Join(cwd, "..", "..", "config", "crd", "bases")
+	dir := filepath.Join(cwd, "..", "..", "config", "dev", "crd", "bases")
 	query := "post-process.jq"
 
 	slog.Info("Reading", "file", query)
