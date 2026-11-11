@@ -1,6 +1,7 @@
 kind: Kustomization
 
-namespace: postgres-operator
+# We use a custom namespace for the PGO
+namespace: op-dev-postgres-operator
 
 labels:
 - includeSelectors: false
@@ -21,6 +22,12 @@ resources:
 components:
 - ../components/images-by-tag
 
+# We set a specific image for the operator
+images:
+- name: postgres-operator
+  newName: registry.developers.crunchydata.com/crunchydata/postgres-operator
+  newTag: ubi9-6.0.0-0
+
 patches:
 - patch: |-
     apiVersion: apps/v1
@@ -30,8 +37,32 @@ patches:
     spec:
       template:
         spec:
+          tolerations:
+          - key: "node-operator"
+            value: "true"
+            operator: "Equal"
+            effect: "NoSchedule"
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 1
+                preference:
+                  matchExpressions:
+                  - key: cloud.google.com/compute-class
+                    operator: In
+                    values:
+                    - ci-compute-class-normal
           containers:
           - name: operator
             env:
             - name: PGO_FEATURE_GATES
               value: ""
+            # Add low resource limits
+            resources:
+              requests:
+                cpu: 10m
+                memory: 10Mi
+              limits:
+                cpu: 25m
+                memory: 50Mi
+              
